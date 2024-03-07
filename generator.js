@@ -10,7 +10,7 @@ const __dirname=path.dirname(__filename)
 
 // console.log(__dirname)
 
-const testToSvg= TextToSvg.loadSync()
+const testToSvg= TextToSvg.loadSync("./fonts/PlayfairDisplay-Regular.ttf")
 
 const generateText= async(text, fontSize)=>{
     try {
@@ -31,7 +31,7 @@ const generateQrcode= async(text)=>{
     let qrcodeBuffer = await bwip.toBuffer({
         bcid:"qrcode",
         text,
-        scale: 6.5,
+        scale: 7.5,
     })
 
     return qrcodeBuffer
@@ -39,14 +39,14 @@ const generateQrcode= async(text)=>{
 
 const createTicket= async(event, outputPath)=>{
     const {title, date, address, price, ticketId}=event
-    const templatePath= path.join(__dirname,"./ticket1.png")
+    const templatePath= path.join(__dirname,"./ticket3.png")
 
     const ticket = sharp(templatePath)
 
     try {
           const qrcodeImageBuffer = await generateQrcode(ticketId)
 
-          const titleBuffer= await generateText(title, 100)
+          const titleBuffer= await generateText(title, 120)
 
           const dateBuffer= await generateText(date, 35)
 
@@ -54,10 +54,11 @@ const createTicket= async(event, outputPath)=>{
 
           const priceBuffer= await generateText(price, 80)
 
-         
+         const ticketIdBuffer= await generateText(ticketId,30)
+
           const qrcodeOverlay={
             input: qrcodeImageBuffer,
-            top: 98,
+            top: 60,
             left: 1547
           }
 
@@ -81,9 +82,18 @@ const createTicket= async(event, outputPath)=>{
 
           const priceOverlay={
             input: priceBuffer,
-            top: 492,
+            top: 510,
             left: 1633
           }
+
+          const ticketIdOverlay={
+            input: ticketIdBuffer,
+            top:455,
+            left:1560,
+            
+          }
+
+        // const idOverlay=  sharp(ticketIdBuffer).rotate(-90,{background:{r:0,g:0,b:0}})
 
           await ticket
             .composite([
@@ -91,7 +101,9 @@ const createTicket= async(event, outputPath)=>{
                 dateOverlay,
                 addressOverlay,
                 priceOverlay,
-                qrcodeOverlay
+                qrcodeOverlay,
+                // idOverlay
+                ticketIdOverlay
             ])
             .toFile(outputPath)
           
